@@ -1,5 +1,5 @@
 # E-shop
-progetto finale del corso Full Stack Web Developer
+progetto finale del corso Full Stack Web Developer  <br>
 Per aprire localmente il progetto:  <br>
 eseguire su terminale: <br>
 -git clone https://github.com/Bart94rsm/E-shop  <br>
