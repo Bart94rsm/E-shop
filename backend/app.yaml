@@ -1,0 +1,7 @@
+runtime: nodejs14
+
+handlers:
+  - url: /static
+    static_dir: frontend/dist/
+  - url: /.*
+    script: auto
