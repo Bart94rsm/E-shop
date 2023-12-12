@@ -6,17 +6,18 @@ import {
   addQuantityCart,
   removeQuantityCart,
   removeCartItem,
+  insertUserReg,
 } from "../utils/operation.js";
 import db from "../utils/db.js";
-import { fileURLToPath } from "url";
-import path from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import validator from "validator";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import CookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 
 const router = express();
 
-router.use(express.static(path.resolve(__dirname, "../../frontend/dist")));
+router.use(cookieParser());
 
 router.use(express.json());
 
@@ -41,18 +42,19 @@ router.get("/api/cart", async (req, res) => {
 });
 
 router.post("/api/cart", async (req, res) => {
-  const addedToCart = await addToCart(req);
-  res.status(201).json(addedToCart);
+  await addToCart(req);
+  const updatedCart = await db.cart.find().toArray();
+  res.status(201).json(updatedCart);
 });
 
 router.put("/api/cart/add", async (req, res) => {
-  const updatedQuantity = await addQuantityCart(req);
+  await addQuantityCart(req);
   const updatedCart = await db.cart.find().toArray();
   res.status(201).json(updatedCart);
 });
 
 router.put("/api/cart/remove/:productId", async (req, res) => {
-  const updatedQuantity = await removeQuantityCart(req);
+  await removeQuantityCart(req);
   const updatedCart = await db.cart.find().toArray();
   res.status(201).json(updatedCart);
 });
@@ -64,8 +66,104 @@ router.delete("/api/cart/delete/:productId", async (req, res) => {
   res.status(201).json(updatedCart);
 });
 
-router.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "../../frontend/dist", "index.html"));
+router.post("/api/registration", async (req, res) => {
+  const { nome, cognome, username, email, password, confirmPassword } =
+    req.body;
+  let errors = [];
+  const existingUser = await db.users.findOne({ email });
+  if (existingUser) {
+    errors.push({ msg: "Utente già registrato" });
+  }
+  if (
+    !validator.isAlpha(nome) ||
+    !validator.isLength(nome, { min: 4, max: 15 })
+  ) {
+    errors.push({
+      msg: "Nome non valido o lunghezza non adeguata (min:4 e max:15)",
+    });
+  }
+  if (
+    !validator.isAlpha(cognome) ||
+    !validator.isLength(cognome, { min: 4, max: 15 })
+  ) {
+    errors.push({
+      msg: "Cognome non valido o lunghezza non adeguata (min:4 e max:15)",
+    });
+  }
+  if (
+    !validator.isAlpha(username) ||
+    !validator.isLength(username, { min: 4, max: 10 })
+  ) {
+    errors.push({
+      msg: "Username non valido o lunghezza non adeguata (min:4 e max:10)",
+    });
+  }
+  if (!validator.isEmail(email)) {
+    errors.push({
+      msg: "Email non valida",
+    });
+  }
+  if (!validator.isStrongPassword(password)) {
+    errors.push({
+      msg: "Password non sicura: inserisci una maiuscola, un carattere speciale, un numero ed un minimo di 8 caratteri",
+    });
+  }
+  if (password !== confirmPassword) {
+    errors.push({
+      msg: "La conferma password non combacia con la password inserita",
+    });
+  }
+  if (errors.length > 0) {
+    res.status(400).json({ errors }); //creo oggetto con array errors che contiene i messaggi errore
+  } else {
+    const user = await insertUserReg(req);
+    res.status(201).json(user);
+  }
+});
+
+router.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+  let errors = [];
+
+  const user = await db.users.findOne({ email });
+  if (user) {
+    const passwordCheck = bcrypt.compareSync(password, user.password);
+    if (passwordCheck) {
+      const payload = {
+        sub: user._id.toString(),
+        isLogged: true,
+      };
+      const token = jwt.sign(payload, "chiave", { expiresIn: 60 });
+      res.cookie("tokenJWT", token, {
+        maxAge: 60 * 1000,
+        httpOnly: true,
+        secure: false,
+      });
+      res.status(200).json({ msg: "Login riuscito" });
+    } else {
+      errors.push({ msg: "Username e password non validi" });
+    }
+  } else {
+    errors.push({ msg: "Utente non trovato" });
+  }
+  if (errors.length > 0) {
+    res.status(400).json({ errors });
+  }
+});
+
+router.get("/api/verifyToken", async (req, res) => {
+  const token = req.cookies.tokenJWT; //seleziono il cookie
+  if (!token) {
+    return res.status(400).json({ msg: "Nessun token fornito" });
+  }
+  jwt.verify(token, "chiave", (err) => {
+    if (err) {
+      return res
+        .status(401)
+        .json({ msg: "Sessione scaduta, rieffettua il login" });
+    }
+    res.status(200).json({ msg: "token valido" });
+  });
 });
 
 export default router;

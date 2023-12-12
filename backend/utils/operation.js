@@ -3,6 +3,7 @@ import db from "./db.js";
 import productsList from "./productsList.js";
 import { ObjectId } from "mongodb";
 import express from "express";
+import bcrypt from "bcrypt";
 
 const operation = express();
 
@@ -14,7 +15,6 @@ const initDb = async () => {
   console.log("connessione al database avvenuta");
   db.shop = mongoClient.db("shop");
   db.products = db.shop.collection("products");
-
   const existingDoc = await db.products.countDocuments();
   if (existingDoc === 0) {
     await db.products.insertMany(productsList);
@@ -41,19 +41,17 @@ const addToCart = async (req) => {
   const existingCartItem = await db.cart.findOne({
     _id: new ObjectId(productId),
   });
-  let result;
+
   if (existingCartItem) {
     //se trovato mi aggiorna solo la proprietà quantità con incrementa
-    result = await db.cart.updateOne(
+    await db.cart.updateOne(
       { _id: new ObjectId(productId) },
       { $inc: { quantity: quantity } }
     );
   } else {
     const cartItem = { ...product, quantity }; // creo oggetto con proprietà del prodotto nel database + la quantità
-    result = await db.cart.insertOne(cartItem);
+    await db.cart.insertOne(cartItem);
   }
-
-  return result;
 };
 
 const addQuantityCart = async (req) => {
@@ -65,7 +63,6 @@ const addQuantityCart = async (req) => {
     { _id: new ObjectId(productId) },
     { $inc: { quantity: 1 } }
   );
-  return result;
 };
 
 const removeQuantityCart = async (req) => {
@@ -80,8 +77,6 @@ const removeQuantityCart = async (req) => {
     { _id: new ObjectId(productId) },
     { $inc: { quantity: -1 } }
   );
-
-  return result;
 };
 
 const removeCartItem = async (req) => {
@@ -93,6 +88,19 @@ const removeCartItem = async (req) => {
   return result;
 };
 
+const initUsers = async () => {
+  db.users = await db.shop.collection("users");
+};
+
+const insertUserReg = async (req) => {
+  const { nome, cognome, username, email, password } = req.body;
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
+  const user = { nome, cognome, username, email, password: hash };
+  const userInserted = await db.users.insertOne(user);
+  return userInserted;
+};
+
 export {
   initDb,
   readProducts,
@@ -102,4 +110,6 @@ export {
   addQuantityCart,
   removeQuantityCart,
   removeCartItem,
+  initUsers,
+  insertUserReg,
 };

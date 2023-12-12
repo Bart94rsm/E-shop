@@ -221,6 +221,7 @@ button:hover {
   height: 0;
   width: 0;
   opacity: 0;
+  pointer-events: none;
 }
 
 .closer-svg {
@@ -272,15 +273,26 @@ nav {
 }
 
 .cart-page-container {
-  display: flex;
-  justify-content: space-between;
-  padding-inline: 1em;
-  align-items: center;
-  border: 2px solid crimson;
-  margin: 2em;
-  background-color: white;
-  gap: 2em;
-  height: 10em;
+  border: 1px solid crimson;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 1em;
+  padding-top: 1em;
+}
+
+@media (min-width: 768px) {
+  .cart-page-container {
+    display: flex;
+    justify-content: space-between;
+    padding-inline: 1em;
+    align-items: center;
+    border: 2px solid crimson;
+    margin: 2em;
+    background-color: white;
+    gap: 2em;
+    height: 10em;
+  }
 }
 
 @media (min-width: 768px) {
@@ -344,6 +356,17 @@ nav {
   grid-template-rows: repeat(2, 1fr);
   place-items: end;
   gap: 4px;
+  padding-bottom: 1em;
+}
+
+@media (min-width: 768px) {
+  .quantity-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    place-items: end;
+    gap: 4px;
+  }
 }
 
 .quantity-container svg {
@@ -397,4 +420,96 @@ svg:hover {
 .addtocart-container input {
   width: 3em;
   height: 2em;
+}
+
+#registration-container {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  width: 100%;
+  margin-top: 5em;
+}
+
+#registration-container form {
+  display: grid;
+  place-content: center;
+  padding: 2em;
+  background: #646cff;
+}
+
+#registration-container input {
+  padding: 1.2em;
+  margin: 0.5em;
+  border-radius: 8px;
+  border: none;
+}
+
+#registration-container button {
+  padding: 0.8em 1.2em;
+  margin: 0.5em;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  #registration-container {
+    display: grid;
+    align-content: start;
+  }
+  #registration-container form {
+    padding: 5em 10em;
+  }
+  #registration-container input {
+    padding: 2em 4em;
+    margin: 0.5em;
+    border-radius: 8px;
+    border: none;
+  }
+}
+
+#login-container {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  width: 100%;
+  margin-top: 5em;
+}
+
+#login-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+  background: #646cff;
+  padding: 5em;
+}
+
+#login-container input {
+  padding: 1em;
+  border-radius: 8px;
+  border: none;
+}
+
+#login-container button {
+  padding: 0.8em 1.2em;
+  margin: 0.5em;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  #login-container {
+    display: grid;
+    align-content: start;
+  }
+  #login-container form {
+    padding: 5em 10em;
+  }
+  #login-container input {
+    padding: 2em 4em;
+    margin: 0.5em;
+    border-radius: 8px;
+    border: none;
+  }
 }

@@ -1,9 +1,11 @@
 import immagini from "../utils/images";
 
 function CartPage({ cart, handleMinus, handlePlus, handleRemove }) {
-  const total = cart.reduce((accumulator, currentItem) => {
-    return accumulator + currentItem.price * currentItem.quantity; //itera l'oggetto e moltiplica le due proprietà price e quantity
-  }, 0);
+  const total = Array.isArray(cart)
+    ? cart.reduce((accumulator, currentItem) => {
+        return accumulator + currentItem.price * currentItem.quantity; //itera l'oggetto e moltiplica le due proprietà price e quantity
+      }, 0)
+    : console.log("Expected cart to be an array, but got:", cart);
 
   return (
     <>
