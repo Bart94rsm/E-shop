@@ -8,5 +8,6 @@ eseguire su terminale: <br>
 -npm install  <br>
 -cd frontend  <br>
 -npm install  <br>
+-npm run build <br>
 -node app (per avviare)  <br>
 -andare su http://localhost:3000 per vedere il sito 
