@@ -14,8 +14,13 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import CookieParser from "cookie-parser";
 import cookieParser from "cookie-parser";
+import { fileURLToPath } from "url";
+import path from "path";
 
 const router = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+router.use(express.static(path.resolve(__dirname, "../../frontend/dist")));
 
 router.use(cookieParser());
 
@@ -164,6 +169,10 @@ router.get("/api/verifyToken", async (req, res) => {
     }
     res.status(200).json({ msg: "token valido" });
   });
+});
+
+router.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../../frontend/dist", "index.html"));
 });
 
 export default router;
